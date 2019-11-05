@@ -1,5 +1,4 @@
 from flask import Blueprint
-from utils import *
 import csv
 from pathlib import Path
 from math import radians, cos, sin, asin, sqrt
