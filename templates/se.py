@@ -30,9 +30,9 @@ def get_points():
                 # Remover os valores negativos da altitude
                 a1 = float(row["Altitude"])
                 if a1 <= 0:
-                    row['Altitude'] = round(-777)
+                    row['Altitude'] = -777
 
-                # print(f'\t{row["Altitude"]}')
+                print(f'\t{row["Altitude"]}')
 
                 serializedData.append(row)
             line_count += 1
