@@ -22,7 +22,7 @@ def get_points():
                 # print(f'\t{row["Latitude"]}\t{row["Longitude"]}\t{row["Nr"]}\t{row["Altitude"]}\t{row["DateFrom"]}\t{row["Date"]}\t{row["Time"]}')
                 serializedData.append(row)
             line_count += 1
-        # print(f'Processadas {line_count} linhas.')
+        # print(f'Processadas {line_count} linhas.')xx
 
         pos = 0
         for row in serializedData:
