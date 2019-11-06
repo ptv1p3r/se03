@@ -74,7 +74,7 @@ def get_points():
     worksheet.write('H1', 'Time in Sec.')
 
     # lines
-    line_number = 1
+    line_number = 5
     for row in serializedData:
         worksheet.write(line_number, 0, row["Latitude"])
         worksheet.write(line_number, 1, row["Longitude"])
