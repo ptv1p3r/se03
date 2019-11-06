@@ -20,8 +20,17 @@ def get_points():
         for row in csv_reader:
             # if line_count == 0:
             #     print(f'\t{" ".join(row)}')
+
             if line_count >= 6:
                 # print(f'\t{row["Latitude"]}\t{row["Longitude"]}\t{row["Nr"]}\t{row["Altitude"]}\t{row["DateFrom"]}\t{row["Date"]}\t{row["Time"]}')
+
+                # Remover os valores negativos da altitude
+                a1 = float(row["Altitude"])
+                if a1 <= 0:
+                    row['Altitude'] = round(-777)
+
+                # print(f'\t{row["Altitude"]}')
+
                 serializedData.append(row)
             line_count += 1
         # print(f'Processadas {line_count} linhas.')xx
