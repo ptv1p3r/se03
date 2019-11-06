@@ -37,9 +37,19 @@ def get_points():
                 pos += 1
 
     workbook = xlsxwriter.Workbook('se.xlsx')
-    worksheet = workbook.add_worksheet()
+    worksheet = workbook.add_worksheet('Data')
 
-    line_number = 0
+    # headers
+    worksheet.write('A1', 'Latitude')
+    worksheet.write('B1', 'Latitude')
+    worksheet.write('C1', 'Nr')
+    worksheet.write('D1', 'Altitude')
+    worksheet.write('E1', 'Date')
+    worksheet.write('F1', 'Time')
+    worksheet.write('G1', 'Distance')
+
+    # lines
+    line_number = 1
     for row in serializedData:
         worksheet.write(line_number, 0, row["Latitude"])
         worksheet.write(line_number, 1, row["Longitude"])
@@ -53,7 +63,7 @@ def get_points():
     workbook.close()
 
     if line_count > 0:
-        return jsonify({'ok': True, 'data': serializedData, "count": line_count}), 200
+        return jsonify({'ok': True, 'data': serializedData, "count": len(serializedData)}), 200
     else:
         return jsonify({'ok': False, 'message': 'No points found'}), 400
 
