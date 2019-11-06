@@ -13,6 +13,9 @@ se = Blueprint('se', __name__, template_folder='templates')
 def get_points():
     serializedData = []
     next_row = None
+    total_distance = 0.0
+    total_time = 0.0
+
     path = Path(__file__).parent.parent.joinpath('20081026094426.csv')
     with open(path, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance", "Time in Sec.", "Vel. m/s", "Vel. km/h", "Mode"))
