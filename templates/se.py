@@ -3,6 +3,8 @@ import csv
 from pathlib import Path
 from haversine import haversine, Unit
 import xlsxwriter
+import datetime
+from config import XLSX_FILE
 
 se = Blueprint('se', __name__, template_folder='templates')
 
@@ -26,6 +28,14 @@ def get_points():
 
         pos = 0
         for row in serializedData:
+            if row["Time in Sec."] is None:
+                p1_timestamp = datetime.datetime.strptime(row["Date"] + ' ' + row["Time"], '%Y-%m-%d %H:%M:%S')
+                if pos + 1 <= len(serializedData) - 1:
+                    next_row = serializedData[pos + 1]
+                if next_row is not None:
+                    p2_timestamp = datetime.datetime.strptime(next_row["Date"] + ' ' + next_row["Time"], '%Y-%m-%d %H:%M:%S')
+                    row["Time in Sec."] = (p2_timestamp - p1_timestamp).total_seconds()
+
             if row["Distance"] is None:
                 p1 = (float(row["Latitude"]), float(row["Longitude"]))
                 if pos + 1 <= len(serializedData) - 1:
@@ -34,9 +44,9 @@ def get_points():
                 if next_row is not None:
                     p2 = (float(next_row["Latitude"]), float(next_row["Longitude"]))
                     row["Distance"] = round(haversine(p1, p2), 2)
-                pos += 1
+            pos += 1
 
-    workbook = xlsxwriter.Workbook('se.xlsx')
+    workbook = xlsxwriter.Workbook(XLSX_FILE)
     worksheet = workbook.add_worksheet('Data')
 
     # headers
@@ -47,6 +57,7 @@ def get_points():
     worksheet.write('E1', 'Date')
     worksheet.write('F1', 'Time')
     worksheet.write('G1', 'Distance')
+    worksheet.write('H1', 'Time in Sec.')
 
     # lines
     line_number = 1
@@ -58,6 +69,7 @@ def get_points():
         worksheet.write(line_number, 4, row["Date"])
         worksheet.write(line_number, 5, row["Time"])
         worksheet.write(line_number, 6, row["Distance"])
+        worksheet.write(line_number, 7, row["Time in Sec."])
         line_number += 1
 
     workbook.close()
