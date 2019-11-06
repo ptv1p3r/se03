@@ -15,7 +15,7 @@ def get_points():
     next_row = None
     path = Path(__file__).parent.parent.joinpath('20081026094426.csv')
     with open(path, mode='r') as csv_file:
-        csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance", "Time in Sec."))
+        csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance", "Time in Sec.", "Vel. m/s", "Vel. km/h"))
         line_count = 0
         for row in csv_reader:
             # if line_count == 0:
