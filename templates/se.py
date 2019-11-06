@@ -57,6 +57,8 @@ def get_points():
                     p2 = (float(next_row["Latitude"]), float(next_row["Longitude"]))
                     row["Distance"] = round(haversine(p1, p2), 2)
             pos += 1
+            total_distance += row["Distance"]
+            total_time += row["Time in Sec."]
 
     workbook = xlsxwriter.Workbook(XLSX_FILE)
     worksheet = workbook.add_worksheet('Data')
@@ -87,7 +89,7 @@ def get_points():
     workbook.close()
 
     if line_count > 0:
-        return jsonify({'ok': True, 'data': serializedData, "count": len(serializedData)}), 200
+        return jsonify({'ok': True, 'data': serializedData, "count": len(serializedData), "total distance": total_distance, "total time": total_time}), 200
     else:
         return jsonify({'ok': False, 'message': 'No points found'}), 400
 
