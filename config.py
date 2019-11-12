@@ -1,5 +1,6 @@
 # api settings
 SERVER_MODE_DEV = True
 SERVER_PORT = 4000
-XLSX_FILE = 'se.xlsx'
+EXPORT_FILE = 'se.xlsx'
+IMPORT_FILE = '20081026094426.csv'
 

@@ -4,19 +4,65 @@ from pathlib import Path
 from haversine import haversine, Unit
 import xlsxwriter
 import datetime
-from config import XLSX_FILE
+from config import *
 
 se = Blueprint('se', __name__, template_folder='templates')
 
 
 @se.route("/se", methods=["GET"])
 def get_points():
-    serializedData = []
+
+    # importa dados
+    serializedData = importData(IMPORT_FILE)
+
+    # processa informacao
+    serializedData, total_distance, total_time = processData(serializedData)
+
+    # exporta dados para excel
+    exportXLS(serializedData)
+
+    if len(serializedData) > 0:
+        return jsonify({'ok': True, 'data': serializedData, "count": len(serializedData), "total distance": total_distance, "total time": total_time}), 200
+    else:
+        return jsonify({'ok': False, 'message': 'No points found'}), 400
+
+
+# process all data
+def processData(dataGroup):
+    pos = 0
     next_row = None
     total_distance = 0.0
     total_time = 0.0
 
-    path = Path(__file__).parent.parent.joinpath('20081026094426.csv')
+    for row in dataGroup:
+        if row["Time (Sec)"] is None:
+            p1_timestamp = datetime.datetime.strptime(row["Date"] + ' ' + row["Time"], '%Y-%m-%d %H:%M:%S')
+            if pos + 1 <= len(dataGroup) - 1:
+                next_row = dataGroup[pos + 1]
+            if next_row is not None:
+                p2_timestamp = datetime.datetime.strptime(next_row["Date"] + ' ' + next_row["Time"],
+                                                          '%Y-%m-%d %H:%M:%S')
+                row["Time (Sec)"] = (p2_timestamp - p1_timestamp).total_seconds()
+
+        if row["Distance (Km)"] is None:
+            p1 = (float(row["Latitude"]), float(row["Longitude"]))
+            if pos + 1 <= len(dataGroup) - 1:
+                next_row = dataGroup[pos + 1]
+
+            if next_row is not None:
+                p2 = (float(next_row["Latitude"]), float(next_row["Longitude"]))
+                row["Distance (Km)"] = round(haversine(p1, p2), 2)
+        pos += 1
+        total_distance += row["Distance (Km)"]
+        total_time += row["Time (Sec)"]
+
+    return dataGroup, total_distance, total_time
+
+
+# import data from csv file
+def importData(fileToImport):
+    processedData = []
+    path = Path(__file__).parent.parent.joinpath(fileToImport)
     with open(path, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance (Km)", "Time (Sec)", "Vel. m/s", "Vel. km/h", "Mode"))
         line_count = 0
@@ -34,38 +80,20 @@ def get_points():
 
                 print(f'\t{row["Altitude"]}')
 
-                serializedData.append(row)
+                processedData.append(row)
             line_count += 1
-        # print(f'Processadas {line_count} linhas.')xx
+        # print(f'Processadas {line_count} linhas.')
+    return processedData
 
-        pos = 0
-        for row in serializedData:
-            if row["Time (Sec)"] is None:
-                p1_timestamp = datetime.datetime.strptime(row["Date"] + ' ' + row["Time"], '%Y-%m-%d %H:%M:%S')
-                if pos + 1 <= len(serializedData) - 1:
-                    next_row = serializedData[pos + 1]
-                if next_row is not None:
-                    p2_timestamp = datetime.datetime.strptime(next_row["Date"] + ' ' + next_row["Time"], '%Y-%m-%d %H:%M:%S')
-                    row["Time (Sec)"] = (p2_timestamp - p1_timestamp).total_seconds()
 
-            if row["Distance (Km)"] is None:
-                p1 = (float(row["Latitude"]), float(row["Longitude"]))
-                if pos + 1 <= len(serializedData) - 1:
-                    next_row = serializedData[pos + 1]
-
-                if next_row is not None:
-                    p2 = (float(next_row["Latitude"]), float(next_row["Longitude"]))
-                    row["Distance (Km)"] = round(haversine(p1, p2), 2)
-            pos += 1
-            total_distance += row["Distance (Km)"]
-            total_time += row["Time (Sec)"]
-
-    workbook = xlsxwriter.Workbook(XLSX_FILE)
+# export data to excel file
+def exportXLS(dataGroup):
+    workbook = xlsxwriter.Workbook(EXPORT_FILE)
     worksheet = workbook.add_worksheet('Data')
 
     # headers
     worksheet.write('A1', 'Latitude')
-    worksheet.write('B1', 'Latitude')
+    worksheet.write('B1', 'Longitude')
     worksheet.write('C1', 'Nr')
     worksheet.write('D1', 'Altitude')
     worksheet.write('E1', 'Date')
@@ -75,7 +103,7 @@ def get_points():
 
     # lines
     line_number = 5
-    for row in serializedData:
+    for row in dataGroup:
         worksheet.write(line_number, 0, row["Latitude"])
         worksheet.write(line_number, 1, row["Longitude"])
         worksheet.write(line_number, 2, row["Nr"])
@@ -87,9 +115,3 @@ def get_points():
         line_number += 1
 
     workbook.close()
-
-    if line_count > 0:
-        return jsonify({'ok': True, 'data': serializedData, "count": len(serializedData), "total distance": total_distance, "total time": total_time}), 200
-    else:
-        return jsonify({'ok': False, 'message': 'No points found'}), 400
-
