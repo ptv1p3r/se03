@@ -98,6 +98,9 @@ def processData(dataGroup):
                 if 20.0 <= float(row["Vel. km/h"]) <= 72.9:
                     row["Mode"] = 'Car'
 
+                # velocidade media aviao https://www.onaverage.co.uk/speed-averages/24-average-speed-of-a-plane
+                if 200.0 <= float(row["Vel. km/h"]) <= 2000.0:
+                    row["Mode"] = 'Airplane'
             except:
                 row["Mode"] = 'na'
 
