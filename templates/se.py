@@ -76,10 +76,11 @@ def processData(dataGroup):
         # calculo de modo de deslocação entre pontos
         if row["Mode"] is None:
             try:
-                row["Mode"] = 'na'
+                row["Mode"] = 'Stop'
 
-                if float(row["Vel. km/h"]) == 0.0:
-                    row["Mode"] = 'Stop'
+                # regra guide Possible transportation modes are: walk, bike, bus, car, subway, train, airplane, boat, run and motorcycle
+                if 0.0 <= float(row["Vel. km/h"]) <= 1.9:
+                    row["Mode"] = 'Walk'
 
                 # velocidade media de ser humano a andar 2-6 km
                 if 2.0 <= float(row["Vel. km/h"]) <= 6.9:
@@ -92,6 +93,10 @@ def processData(dataGroup):
                 # velocidade media bicicleta 11-19 km
                 if 11.0 <= float(row["Vel. km/h"]) <= 19.9:
                     row["Mode"] = 'Bike'
+
+                # velocidade media carro https://en.wikipedia.org/wiki/Medium-speed_vehicle
+                if 20.0 <= float(row["Vel. km/h"]) <= 72.9:
+                    row["Mode"] = 'Car'
 
             except:
                 row["Mode"] = 'na'
