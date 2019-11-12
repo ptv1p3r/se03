@@ -150,6 +150,7 @@ def exportXLS(dataGroup):
     worksheet.write('G1', 'Distance (Km)')
     worksheet.write('H1', 'Distance (Mt)')
     worksheet.write('I1', 'Time (Sec)')
+    worksheet.write('J1', 'Mode')
 
     # lines
     line_number = 5
@@ -163,6 +164,7 @@ def exportXLS(dataGroup):
         worksheet.write(line_number, 6, row["Distance (Km)"])
         worksheet.write(line_number, 7, row["Distance (Mt)"])
         worksheet.write(line_number, 8, row["Time (Sec)"])
+        worksheet.write(line_number, 9, row["Mode"])
         line_number += 1
 
     workbook.close()
