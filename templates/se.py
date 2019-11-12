@@ -102,7 +102,7 @@ def processData(dataGroup):
                 row["Mode"] = 'na'
 
         pos += 1
-        total_distance += row["Distance (Km)"]
+        total_distance += row["Distance (Mt)"]
         total_time += row["Time (Sec)"]
 
     return dataGroup, round(total_distance, 2), round(total_time, 2)
