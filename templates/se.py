@@ -62,7 +62,7 @@ def processData(dataGroup):
             if next_row is not None:
                 p2 = (float(next_row["Latitude"]), float(next_row["Longitude"]))
                 row["Distance (Km)"] = round(haversine(p1, p2, unit=Unit.KILOMETERS), 2)
-                distance_mt = round(haversine(p1, p2, unit=Unit.METERS), 2)
+                row["Distance (Mt)"] = distance_mt = round(haversine(p1, p2, unit=Unit.METERS), 2)
 
         # calculo de velocidade de deslocação entre pontos
         if row["Vel. m/s"] is None:
@@ -113,7 +113,7 @@ def importData(fileToImport):
     processedData = []
     path = Path(__file__).parent.parent.joinpath(fileToImport)
     with open(path, mode='r') as csv_file:
-        csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance (Km)", "Time (Sec)", "Vel. m/s", "Vel. km/h", "Mode"))
+        csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance (Km)", "Distance (Mt)", "Time (Sec)", "Vel. m/s", "Vel. km/h", "Mode"))
         line_count = 0
         for row in csv_reader:
             # if line_count == 0:
@@ -148,7 +148,8 @@ def exportXLS(dataGroup):
     worksheet.write('E1', 'Date')
     worksheet.write('F1', 'Time')
     worksheet.write('G1', 'Distance (Km)')
-    worksheet.write('H1', 'Time (Sec)')
+    worksheet.write('H1', 'Distance (Mt)')
+    worksheet.write('I1', 'Time (Sec)')
 
     # lines
     line_number = 5
@@ -160,7 +161,8 @@ def exportXLS(dataGroup):
         worksheet.write(line_number, 4, row["Date"])
         worksheet.write(line_number, 5, row["Time"])
         worksheet.write(line_number, 6, row["Distance (Km)"])
-        worksheet.write(line_number, 7, row["Time (Sec)"])
+        worksheet.write(line_number, 7, row["Distance (Mt)"])
+        worksheet.write(line_number, 8, row["Time (Sec)"])
         line_number += 1
 
     workbook.close()
