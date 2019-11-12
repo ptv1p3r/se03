@@ -19,7 +19,7 @@ def get_points():
     serializedData, total_distance, total_time = processData(serializedData)
 
     # exporta dados para excel
-    exportXLS(serializedData)
+    exportXLS(serializedData, total_distance, total_time)
 
     if len(serializedData) > 0:
         return jsonify({'ok': True, 'data': serializedData, "count": len(serializedData), "total distance": total_distance, "total time": total_time}), 200
@@ -79,19 +79,19 @@ def processData(dataGroup):
                 row["Mode"] = 'Stop'
 
                 # regra guide Possible transportation modes are: walk, bike, bus, car, subway, train, airplane, boat, run and motorcycle
-                if 0.0 <= float(row["Vel. km/h"]) <= 1.9:
+                if 0.1 <= float(row["Vel. km/h"]) <= 2.0:
                     row["Mode"] = 'Walk'
 
                 # velocidade media de ser humano a andar 2-6 km
-                if 2.0 <= float(row["Vel. km/h"]) <= 6.9:
+                if 2.0 <= float(row["Vel. km/h"]) <= 7.0:
                     row["Mode"] = 'Walk'
 
                 # velocidade media de ser humano a correr 7-10 km
-                if 7.0 <= float(row["Vel. km/h"]) <= 10.9:
+                if 7.0 <= float(row["Vel. km/h"]) <= 11.0:
                     row["Mode"] = 'Run'
 
                 # velocidade media bicicleta 11-19 km
-                if 11.0 <= float(row["Vel. km/h"]) <= 19.9:
+                if 11.0 <= float(row["Vel. km/h"]) <= 20.0:
                     row["Mode"] = 'Bike'
 
                 # velocidade media carro https://en.wikipedia.org/wiki/Medium-speed_vehicle
@@ -105,7 +105,7 @@ def processData(dataGroup):
         total_distance += row["Distance (Km)"]
         total_time += row["Time (Sec)"]
 
-    return dataGroup, total_distance, total_time
+    return dataGroup, round(total_distance, 2), round(total_time, 2)
 
 
 # import data from csv file
@@ -129,23 +129,39 @@ def importData(fileToImport):
 
 
 # export data to excel file
-def exportXLS(dataGroup):
+def exportXLS(dataGroup, total_distance, total_time):
+
     workbook = xlsxwriter.Workbook(EXPORT_FILE)
     worksheet = workbook.add_worksheet('Data')
+    header_format = workbook.add_format({'bold': True, 'font_color': 'black'})
 
-    line_number = 0
+    worksheet.set_column(2, 0, 25)
+    worksheet.write(2, 0, 'Total distance', header_format)
+    worksheet.write(2, 1, total_distance)
+    worksheet.set_column(3, 0, 10)
+    worksheet.write(3, 0, 'Total time', header_format)
+    worksheet.write(3, 1, total_time)
 
+    line_number = 5
     # headers
-    worksheet.write(line_number, 0, 'Latitude')
-    worksheet.write(line_number, 1, 'Longitude')
-    worksheet.write(line_number, 2, 'Nr')
-    worksheet.write(line_number, 3, 'Altitude')
-    worksheet.write(line_number, 4, 'Date')
-    worksheet.write(line_number, 5, 'Time')
-    worksheet.write(line_number, 6, 'Distance (Km)')
-    worksheet.write(line_number, 7, 'Distance (Mt)')
-    worksheet.write(line_number, 8, 'Time (Sec)')
-    worksheet.write(line_number, 9, 'Mode')
+    # worksheet.set_column(line_number, 0, 10)
+    worksheet.write(line_number, 0, 'Latitude', header_format)
+    worksheet.write(line_number, 1, 'Longitude', header_format)
+    worksheet.write(line_number, 2, 'Nr', header_format)
+    worksheet.write(line_number, 3, 'Altitude', header_format)
+    worksheet.set_column(line_number, 4, 10)
+    worksheet.write(line_number, 4, 'Date', header_format)
+    worksheet.set_column(line_number, 5, 10)
+    worksheet.write(line_number, 5, 'Time', header_format)
+    worksheet.set_column(line_number, 6, 40)
+    worksheet.write(line_number, 6, 'Distance (Km)', header_format)
+    worksheet.set_column(line_number, 7, 40)
+    worksheet.write(line_number, 7, 'Distance (Mt)', header_format)
+    worksheet.set_column(line_number, 8, 10)
+    worksheet.write(line_number, 8, 'Time (Sec)', header_format)
+    worksheet.write(line_number, 9, 'Vel. m/s', header_format)
+    worksheet.write(line_number, 10, 'Vel. km/h', header_format)
+    worksheet.write(line_number, 11, 'Mode', header_format)
     line_number += 1
 
     # lines
@@ -159,7 +175,9 @@ def exportXLS(dataGroup):
         worksheet.write(line_number, 6, row["Distance (Km)"])
         worksheet.write(line_number, 7, row["Distance (Mt)"])
         worksheet.write(line_number, 8, row["Time (Sec)"])
-        worksheet.write(line_number, 9, row["Mode"])
+        worksheet.write(line_number, 9, row["Vel. m/s"])
+        worksheet.write(line_number, 10, row["Vel. km/h"])
+        worksheet.write(line_number, 11, row["Mode"])
         line_number += 1
 
     workbook.close()
