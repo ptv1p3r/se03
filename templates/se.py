@@ -33,6 +33,7 @@ def processData(dataGroup):
     next_row = None
     total_distance = 0.0
     total_time = 0.0
+    distance_mt = 0.0
 
     for row in dataGroup:
         # calculo de tempo entre pontos
@@ -60,25 +61,40 @@ def processData(dataGroup):
             # calcula dados da linha seguinte
             if next_row is not None:
                 p2 = (float(next_row["Latitude"]), float(next_row["Longitude"]))
-                row["Distance (Km)"] = round(haversine(p1, p2), 2)
+                row["Distance (Km)"] = round(haversine(p1, p2, unit=Unit.KILOMETERS), 2)
+                distance_mt = round(haversine(p1, p2, unit=Unit.METERS), 2)
 
         # calculo de velocidade de deslocação entre pontos
         if row["Vel. m/s"] is None:
             try:
-                row["Vel. m/s"] = round(float(row["Distance (Km)"]) / float(row["Time (Sec)"]), 4)
+                row["Vel. m/s"] = round(distance_mt / float(row["Time (Sec)"]), 2)
                 row["Vel. km/h"] = round(float(row["Vel. m/s"]) * 3.6, 2)
             except:
                 row["Vel. m/s"] = 0.0
                 row["Vel. km/h"] = 0.0
 
-            # # calcula linha de dados seguinte
-            # if pos + 1 <= len(dataGroup) - 1:
-            #     next_row = dataGroup[pos + 1]
-            #
-            # # calcula dados da linha seguinte
-            # if next_row is not None:
-            #     p2 = (float(next_row["Latitude"]), float(next_row["Longitude"]))
-            #     row["Distance (Km)"] = round(haversine(p1, p2), 2)
+        # calculo de modo de deslocação entre pontos
+        if row["Mode"] is None:
+            try:
+                row["Mode"] = 'na'
+
+                if float(row["Vel. km/h"]) == 0.0:
+                    row["Mode"] = 'Stop'
+
+                # velocidade media de ser humano a andar 2-6 km
+                if 2.0 <= float(row["Vel. km/h"]) <= 6.9:
+                    row["Mode"] = 'Walk'
+
+                # velocidade media de ser humano a correr 7-10 km
+                if 7.0 <= float(row["Vel. km/h"]) <= 10.9:
+                    row["Mode"] = 'Run'
+
+                # velocidade media bicicleta 11-19 km
+                if 11.0 <= float(row["Vel. km/h"]) <= 19.9:
+                    row["Mode"] = 'Bike'
+
+            except:
+                row["Mode"] = 'na'
 
         pos += 1
         total_distance += row["Distance (Km)"]
