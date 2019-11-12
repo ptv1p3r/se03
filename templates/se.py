@@ -35,23 +35,51 @@ def processData(dataGroup):
     total_time = 0.0
 
     for row in dataGroup:
+        # calculo de tempo entre pontos
         if row["Time (Sec)"] is None:
             p1_timestamp = datetime.datetime.strptime(row["Date"] + ' ' + row["Time"], '%Y-%m-%d %H:%M:%S')
+
+            # calcula linha de dados seguinte
             if pos + 1 <= len(dataGroup) - 1:
                 next_row = dataGroup[pos + 1]
+
+            # calcula dados da linha seguinte
             if next_row is not None:
                 p2_timestamp = datetime.datetime.strptime(next_row["Date"] + ' ' + next_row["Time"],
                                                           '%Y-%m-%d %H:%M:%S')
                 row["Time (Sec)"] = (p2_timestamp - p1_timestamp).total_seconds()
 
+        # calculo de distancia entre pontos
         if row["Distance (Km)"] is None:
             p1 = (float(row["Latitude"]), float(row["Longitude"]))
+
+            # calcula linha de dados seguinte
             if pos + 1 <= len(dataGroup) - 1:
                 next_row = dataGroup[pos + 1]
 
+            # calcula dados da linha seguinte
             if next_row is not None:
                 p2 = (float(next_row["Latitude"]), float(next_row["Longitude"]))
                 row["Distance (Km)"] = round(haversine(p1, p2), 2)
+
+        # calculo de velocidade de deslocação entre pontos
+        if row["Vel. m/s"] is None:
+            try:
+                row["Vel. m/s"] = round(float(row["Distance (Km)"]) / float(row["Time (Sec)"]), 4)
+                row["Vel. km/h"] = round(float(row["Vel. m/s"]) * 3.6, 2)
+            except:
+                row["Vel. m/s"] = 0.0
+                row["Vel. km/h"] = 0.0
+
+            # # calcula linha de dados seguinte
+            # if pos + 1 <= len(dataGroup) - 1:
+            #     next_row = dataGroup[pos + 1]
+            #
+            # # calcula dados da linha seguinte
+            # if next_row is not None:
+            #     p2 = (float(next_row["Latitude"]), float(next_row["Longitude"]))
+            #     row["Distance (Km)"] = round(haversine(p1, p2), 2)
+
         pos += 1
         total_distance += row["Distance (Km)"]
         total_time += row["Time (Sec)"]
