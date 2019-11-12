@@ -136,11 +136,13 @@ def exportXLS(dataGroup, total_distance, total_time):
     header_format = workbook.add_format({'bold': True, 'font_color': 'black'})
 
     worksheet.set_column(2, 0, 25)
-    worksheet.write(2, 0, 'Total distance', header_format)
+    worksheet.write(2, 0, 'Total distance(mt)', header_format)
     worksheet.write(2, 1, total_distance)
     worksheet.set_column(3, 0, 10)
-    worksheet.write(3, 0, 'Total time', header_format)
+    worksheet.write(3, 0, 'Total time(s)', header_format)
     worksheet.write(3, 1, total_time)
+    worksheet.write(3, 2, 'Delta', header_format)
+    worksheet.write(3, 3, str(datetime.timedelta(seconds=total_time)))
 
     line_number = 5
     # headers
