@@ -116,22 +116,15 @@ def importData(fileToImport):
         csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance (Km)", "Distance (Mt)", "Time (Sec)", "Vel. m/s", "Vel. km/h", "Mode"))
         line_count = 0
         for row in csv_reader:
-            # if line_count == 0:
-            #     print(f'\t{" ".join(row)}')
-
             if line_count >= 6:
-                # print(f'\t{row["Latitude"]}\t{row["Longitude"]}\t{row["Nr"]}\t{row["Altitude"]}\t{row["DateFrom"]}\t{row["Date"]}\t{row["Time"]}')
 
                 # Remover os valores negativos da altitude
                 a1 = float(row["Altitude"])
                 if a1 <= 0:
                     row['Altitude'] = -777
 
-                print(f'\t{row["Altitude"]}')
-
                 processedData.append(row)
             line_count += 1
-        # print(f'Processadas {line_count} linhas.')
     return processedData
 
 
@@ -140,20 +133,22 @@ def exportXLS(dataGroup):
     workbook = xlsxwriter.Workbook(EXPORT_FILE)
     worksheet = workbook.add_worksheet('Data')
 
+    line_number = 0
+
     # headers
-    worksheet.write('A1', 'Latitude')
-    worksheet.write('B1', 'Longitude')
-    worksheet.write('C1', 'Nr')
-    worksheet.write('D1', 'Altitude')
-    worksheet.write('E1', 'Date')
-    worksheet.write('F1', 'Time')
-    worksheet.write('G1', 'Distance (Km)')
-    worksheet.write('H1', 'Distance (Mt)')
-    worksheet.write('I1', 'Time (Sec)')
-    worksheet.write('J1', 'Mode')
+    worksheet.write(line_number, 0, 'Latitude')
+    worksheet.write(line_number, 1, 'Longitude')
+    worksheet.write(line_number, 2, 'Nr')
+    worksheet.write(line_number, 3, 'Altitude')
+    worksheet.write(line_number, 4, 'Date')
+    worksheet.write(line_number, 5, 'Time')
+    worksheet.write(line_number, 6, 'Distance (Km)')
+    worksheet.write(line_number, 7, 'Distance (Mt)')
+    worksheet.write(line_number, 8, 'Time (Sec)')
+    worksheet.write(line_number, 9, 'Mode')
+    line_number += 1
 
     # lines
-    line_number = 5
     for row in dataGroup:
         worksheet.write(line_number, 0, row["Latitude"])
         worksheet.write(line_number, 1, row["Longitude"])
