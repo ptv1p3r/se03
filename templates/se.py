@@ -169,7 +169,9 @@ def importData(fileToImport):
                 row['Vel. km/h'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Vel. km/h')][1] if IMPORT_FILE_HEADER_MAP.get('Vel. km/h', None) is not None else None
                 row['Mode'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Mode')][1] if IMPORT_FILE_HEADER_MAP.get('Mode', None) is not None else None
 
-                processedData.append(row)
+                if row['Latitude'] is not None and row['Longitude'] is not None and row['Date'] is not None and row['Time'] is not None:
+                    processedData.append(row)
+
             line_count += 1
     return processedData
 
