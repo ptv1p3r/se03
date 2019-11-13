@@ -4,15 +4,19 @@ SERVER_PORT = 4000
 EXPORT_FILE = 'se.xlsx'
 # IMPORT_FILE = '20081026094426.csv'
 IMPORT_FILE = '15-07-2017-ap-02738d854419-pml.csv'
+IMPORT_FILE_INDEX = {
+        "20081026094426.csv": 6,
+        "15-07-2017-ap-02738d854419-pml.csv": 1
+    }
 # "Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance (Km)", "Distance (Mt)", "Time (Sec)", "Vel. m/s", "Vel. km/h", "Mode"
 # IMPORT_FILE_HEADER_MAP = {
-#         "Latitude": 1,
-#         "Longitude": 2,
-#         "Nr": 3,
-#         "Altitude": 4,
-#         "DateFrom": 5,
-#         "Date": 6,
-#         "Time": 7,
+#         "Latitude": 0,
+#         "Longitude": 1,
+#         "Nr": 2,
+#         "Altitude": 3,
+#         "DateFrom": 4,
+#         "Date": 5,
+#         "Time": 6,
 #         "Distance (Km)": None,
 #         "Distance (Mt)": None,
 #         "Time (Sec)": None,

@@ -117,17 +117,12 @@ def importData(fileToImport):
     processedData = []
     path = Path(__file__).parent.parent.joinpath(fileToImport)
 
-    dataImportIndex = {
-        "20081026094426.csv": 6,
-        "15-07-2017-ap-02738d854419-pml.csv": 1
-    }
-
     with open(path, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance (Km)", "Distance (Mt)", "Time (Sec)", "Vel. m/s", "Vel. km/h", "Mode"))
         line_count = 0
         start_line = 0
 
-        index = dataImportIndex.get(fileToImport, "Invalid index")
+        index = IMPORT_FILE_INDEX.get(fileToImport, "Invalid index")
         if not index == 'Invalid index':
             start_line = index
 
@@ -135,8 +130,21 @@ def importData(fileToImport):
             if line_count >= start_line:
 
                 itemsGroup = list(row.items())
+
                 row['Latitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Latitude')][1] if IMPORT_FILE_HEADER_MAP.get('Latitude', None) is not None else None
+                if row['Latitude'] is not None:
+                    # ^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$ com indicador de polaridade inicial (latitude)
+                    match = re.search(r'(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$', row['Latitude'])
+                    if match is None:
+                        row['Latitude'] = None
+
                 row['Longitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Longitude')][1] if IMPORT_FILE_HEADER_MAP.get('Longitude', None) is not None else None
+                if row['Longitude'] is not None:
+                    # ^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$ com indicador de polaridade inicial (longitude)
+                    match = re.search(r'(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$', row['Longitude'])
+                    if match is None:
+                        row['Longitude'] = None
+
                 row['Nr'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Nr')][1] if IMPORT_FILE_HEADER_MAP.get('Nr', None) is not None else None
 
                 row['Altitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Altitude')][1] if IMPORT_FILE_HEADER_MAP.get('Altitude', None) is not None else None
@@ -145,6 +153,7 @@ def importData(fileToImport):
                         row['Altitude'] = -777
 
                 row['DateFrom'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('DateFrom')][1] if IMPORT_FILE_HEADER_MAP.get('DateFrom', None) is not None else None
+
                 row['Date'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Date')][1] if IMPORT_FILE_HEADER_MAP.get('Date', None) is not None else None
                 if row['Date'] is not None:
                     match = re.search(r'\d{2}-\d{2}-\d{4}', row['Date'])
