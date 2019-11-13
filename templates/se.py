@@ -161,8 +161,11 @@ def importData(fileToImport):
                     if match is None:
                         match = re.search(r'\d{4}-\d{2}-\d{2}', row['Date'])
                         dateFilter = '%Y-%m-%d'
-                    date = datetime.datetime.strptime(match.group(), dateFilter).date()
-                    row['Date'] = date.strftime('%Y-%m-%d')
+                    if match is not None:
+                        date = datetime.datetime.strptime(match.group(), dateFilter).date()
+                        row['Date'] = date.strftime('%Y-%m-%d')
+                    else:
+                        row['Date'] = None
 
                 row['Time'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Time')][1] if IMPORT_FILE_HEADER_MAP.get('Time', None) is not None else None
                 if row['Time'] is not None:
@@ -170,6 +173,8 @@ def importData(fileToImport):
                     if match is not None:
                         time = datetime.datetime.strptime(match.group(), '%H:%M:%S').time()
                         row['Time'] = time.strftime("%H:%M:%S")
+                    else:
+                        row['Time'] = None
 
                 row['Distance (Km)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Distance (Km)')][1] if IMPORT_FILE_HEADER_MAP.get('Distance (Km)', None) is not None else None
                 row['Distance (Mt)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Distance (Mt)')][1] if IMPORT_FILE_HEADER_MAP.get('Distance (Mt)', None) is not None else None
