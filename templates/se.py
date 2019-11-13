@@ -31,10 +31,6 @@ def get_points():
         return jsonify({'ok': False, 'message': 'No points found'}), 400
 
 
-def myFunc(e):
-    return e['Time (Sec)']
-
-
 # process all data
 def processData(dataGroup):
     pos = 0
