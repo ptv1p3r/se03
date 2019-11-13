@@ -5,6 +5,7 @@ from haversine import haversine, Unit
 import xlsxwriter
 import datetime
 from config import *
+import re
 
 se = Blueprint('se', __name__, template_folder='templates')
 
@@ -115,16 +116,58 @@ def processData(dataGroup):
 def importData(fileToImport):
     processedData = []
     path = Path(__file__).parent.parent.joinpath(fileToImport)
+
+    dataImportIndex = {
+        "20081026094426.csv": 6,
+        "15-07-2017-ap-02738d854419-pml.csv": 1
+    }
+
     with open(path, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance (Km)", "Distance (Mt)", "Time (Sec)", "Vel. m/s", "Vel. km/h", "Mode"))
         line_count = 0
-        for row in csv_reader:
-            if line_count >= 6:
+        start_line = 0
 
-                # Remover os valores negativos da altitude
-                a1 = float(row["Altitude"])
-                if a1 <= 0:
-                    row['Altitude'] = -777
+        index = dataImportIndex.get(fileToImport, "Invalid index")
+        if not index == 'Invalid index':
+            start_line = index
+
+        for row in csv_reader:
+            if line_count >= start_line:
+
+                itemsGroup = list(row.items())
+                row['Latitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Latitude')][1] if IMPORT_FILE_HEADER_MAP.get('Latitude', None) is not None else None
+                row['Longitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Longitude')][1] if IMPORT_FILE_HEADER_MAP.get('Longitude', None) is not None else None
+                row['Nr'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Nr')][1] if IMPORT_FILE_HEADER_MAP.get('Nr', None) is not None else None
+
+                row['Altitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Altitude')][1] if IMPORT_FILE_HEADER_MAP.get('Altitude', None) is not None else None
+                if row['Altitude'] is not None:
+                    if float(row["Altitude"]) <= 0:
+                        row['Altitude'] = -777
+
+                row['DateFrom'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('DateFrom')][1] if IMPORT_FILE_HEADER_MAP.get('DateFrom', None) is not None else None
+                row['Date'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Date')][1] if IMPORT_FILE_HEADER_MAP.get('Date', None) is not None else None
+                if row['Date'] is not None:
+                    match = re.search(r'\d{2}-\d{2}-\d{4}', row['Date'])
+                    dateFilter = '%d-%m-%Y'
+                    if match is None:
+                        match = re.search(r'\d{4}-\d{2}-\d{2}', row['Date'])
+                        dateFilter = '%Y-%m-%d'
+                    date = datetime.datetime.strptime(match.group(), dateFilter).date()
+                    row['Date'] = date.strftime('%Y-%m-%d')
+
+                row['Time'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Time')][1] if IMPORT_FILE_HEADER_MAP.get('Time', None) is not None else None
+                if row['Time'] is not None:
+                    match = re.search(r'\d{2}:\d{2}:\d{2}', row['Time'])
+                    if match is not None:
+                        time = datetime.datetime.strptime(match.group(), '%H:%M:%S').time()
+                        row['Time'] = time.strftime("%H:%M:%S")
+
+                row['Distance (Km)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Distance (Km)')][1] if IMPORT_FILE_HEADER_MAP.get('Distance (Km)', None) is not None else None
+                row['Distance (Mt)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Distance (Mt)')][1] if IMPORT_FILE_HEADER_MAP.get('Distance (Mt)', None) is not None else None
+                row['Time (Sec)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Time (Sec)')][1] if IMPORT_FILE_HEADER_MAP.get('Time (Sec)', None) is not None else None
+                row['Vel. m/s'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Vel. m/s')][1] if IMPORT_FILE_HEADER_MAP.get('Vel. m/s', None) is not None else None
+                row['Vel. km/h'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Vel. km/h')][1] if IMPORT_FILE_HEADER_MAP.get('Vel. km/h', None) is not None else None
+                row['Mode'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Mode')][1] if IMPORT_FILE_HEADER_MAP.get('Mode', None) is not None else None
 
                 processedData.append(row)
             line_count += 1
