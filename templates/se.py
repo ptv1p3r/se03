@@ -1,6 +1,7 @@
+import os
 from itertools import cycle
-
-from flask import Blueprint, jsonify
+from urllib import request
+from flask import Blueprint, jsonify, request
 import csv
 from pathlib import Path
 from haversine import haversine, Unit
@@ -8,16 +9,63 @@ import xlsxwriter
 import datetime
 from config import *
 import re
+from werkzeug.utils import secure_filename
+from werkzeug.exceptions import HTTPException
 
 se = Blueprint('se', __name__, template_folder='templates')
 
 
 @se.route("/se", methods=["GET"])
 def get_points():
-    # importa dados
-    serializedData = importData(IMPORT_FILE)
+    global DOWNLOAD_PATH
+    file = ''
 
-    # processa informacao
+    # valida chaves enviadas para a api
+    try:
+        if 'file' not in request.files:
+            file = None
+        else:
+            file = request.files['file']
+            # FILEPATH = Path(__file__).parent.parent.joinpath(file)
+            DOWNLOAD_PATH = Path(__file__).parent.parent.joinpath(UPLOAD_FOLDER)
+
+        start_index = request.form['index']
+        latitude = request.form['latitude']
+        longitude = request.form['longitude']
+        datefrom = request.form['datefrom']
+        date = request.form['date']
+        time = request.form['time']
+
+        nr = request.form['nr']
+        if not nr.isdigit():
+            nr = None
+
+        altitude = request.form['altitude']
+        distancekm = request.form['distance (km)']
+        distancemt = request.form['distance (mt)']
+        timesec = request.form['time (sec)']
+        velms = request.form['vel. m/s']
+        velkm = request.form['vel. km/h']
+        mode = request.form['mode']
+
+        IMPORT_FILE_HEADER_MAP.update({"index": start_index, "Latitude": latitude, "Longitude": longitude,
+                                       "Nr": nr, "Altitude": altitude, "DateFrom": datefrom, "Date": date,
+                                       "Time": time, "Distance (Km)": distancekm, "Distance (Mt)": distancemt,
+                                       "Time (Sec)": timesec, "Vel. m/s": velms, "Vel. km/h": velkm,
+                                       "Mode": mode})
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(DOWNLOAD_PATH, filename))
+
+    except HTTPException as e:
+        print(e)
+
+    # importa dados
+    # serializedData = importData(IMPORT_FILE)
+    serializedData = importData(file.filename)
+
+    # processa informação
     serializedData, total_distance, total_time = processData(serializedData)
 
     # exporta dados para excel
@@ -121,12 +169,13 @@ def processData(dataGroup):
 # import data from csv file
 def importData(fileToImport):
     processedData = []
-    path = Path(__file__).parent.parent.joinpath(fileToImport)
+    # path = Path(__file__).parent.parent.joinpath(fileToImport)
+    path = os.path.join(DOWNLOAD_PATH, fileToImport)
 
     with open(path, mode='r') as csv_file:
-        csv_reader = csv.DictReader(csv_file, fieldnames=(
-        "Latitude", "Longitude", "Nr", "Altitude", "DateFrom", "Date", "Time", "Distance (Km)", "Distance (Mt)",
-        "Time (Sec)", "Vel. m/s", "Vel. km/h", "Mode"))
+        csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom",
+                                                          "Date", "Time", "Distance (Km)", "Distance (Mt)",
+                                                          "Time (Sec)", "Vel. m/s", "Vel. km/h", "Mode"))
         line_count = 0
         start_line = 0
 
@@ -283,3 +332,8 @@ def exportXLS(dataGroup, total_distance, total_time):
     # worksheet.set_column(line_number, 13, None, lines_format)
     # worksheet.write_blank(line_number, 0, None, lines_format)
     workbook.close()
+
+
+# valida extensão do ficheiro
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in UPLOAD_ALLOWED_EXTENSIONS
