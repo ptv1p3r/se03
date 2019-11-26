@@ -17,18 +17,22 @@ se = Blueprint('se', __name__, template_folder='templates')
 
 @se.route("/se", methods=["GET"])
 def get_points():
+    serializedData = {}
+    total_distance = 0
+    total_time = 0
 
     # valida dados pre-importacao
-    downloadPath, file = validateApiData()
+    isValid, downloadPath, file = validateApiData()
 
-    # importa dados
-    serializedData = importData(downloadPath, file.filename)
+    if isValid:
+        # importa dados
+        serializedData = importData(downloadPath, file.filename)
 
-    # processa informação
-    serializedData, total_distance, total_time = processData(serializedData)
+        # processa informação
+        serializedData, total_distance, total_time = processData(serializedData)
 
-    # exporta dados para excel
-    exportXLS(serializedData, total_distance, total_time)
+        # exporta dados para excel
+        exportXLS(serializedData, total_distance, total_time)
 
     if len(serializedData) > 0:
         return jsonify(
@@ -40,6 +44,7 @@ def get_points():
 
 # validate received api data
 def validateApiData():
+    isValid = False
     file = ''
     downloadPath = ''
 
@@ -54,38 +59,42 @@ def validateApiData():
         start_index = request.form.get('index', None)
         if start_index == '':
             start_index = None
-        else:
+        elif start_index is not None:
             start_index = int(start_index)
 
         latitude = request.form.get('latitude', None)
         if latitude == '':
             latitude = None
-        else:
+        elif latitude is not None:
             latitude = int(latitude)
 
         longitude = request.form.get('longitude', None)
         if longitude == '':
             longitude = None
-        else:
+        elif longitude is not None:
             longitude = int(longitude)
+
+        date = request.form.get('date', None)
+        if date == '':
+            date = None
+        elif date is not None:
+            date = int(date)
+
+        time = request.form.get('time', None)
+        if time == '':
+            time = None
+        elif time is not None:
+            time = int(time)
+
+        # mandatory fields present and valid
+        if file is not None and start_index is not None and latitude is not None and longitude is not None and date is not None and time is not None:
+            isValid = True
 
         datefrom = request.form.get('datefrom', None)
         if datefrom == '':
             datefrom = None
         else:
             datefrom = int(datefrom)
-
-        date = request.form.get('date', None)
-        if date == '':
-            date = None
-        else:
-            date = int(date)
-
-        time = request.form.get('time', None)
-        if time == '':
-            time = None
-        else:
-            time = int(time)
 
         nr = request.form.get('nr', None)
         if nr == '':
@@ -114,7 +123,7 @@ def validateApiData():
         file = None
         downloadPath = None
 
-    return downloadPath, file
+    return isValid, downloadPath, file
 
 
 # process all data
