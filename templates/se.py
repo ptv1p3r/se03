@@ -17,8 +17,31 @@ se = Blueprint('se', __name__, template_folder='templates')
 
 @se.route("/se", methods=["GET"])
 def get_points():
-    global DOWNLOAD_PATH
+
+    # valida dados pre-importacao
+    downloadPath, file = validateApiData()
+
+    # importa dados
+    serializedData = importData(downloadPath, file.filename)
+
+    # processa informação
+    serializedData, total_distance, total_time = processData(serializedData)
+
+    # exporta dados para excel
+    exportXLS(serializedData, total_distance, total_time)
+
+    if len(serializedData) > 0:
+        return jsonify(
+            {'ok': True, 'data': serializedData, "count": len(serializedData), "total distance": total_distance,
+             "total time": total_time}), 200
+    else:
+        return jsonify({'ok': False, 'message': 'No points found'}), 400
+
+
+# validate received api data
+def validateApiData():
     file = ''
+    downloadPath = ''
 
     # valida chaves enviadas para a api
     try:
@@ -26,8 +49,7 @@ def get_points():
             file = None
         else:
             file = request.files['file']
-            # FILEPATH = Path(__file__).parent.parent.joinpath(file)
-            DOWNLOAD_PATH = Path(__file__).parent.parent.joinpath(UPLOAD_FOLDER)
+            downloadPath = Path(__file__).parent.parent.joinpath(UPLOAD_FOLDER)
 
         start_index = request.form.get('index', None)
         if start_index == '':
@@ -77,71 +99,20 @@ def get_points():
         else:
             altitude = int(altitude)
 
-        distancekm = request.form.get('distance (km)', None)
-        if distancekm == '':
-            distancekm = None
-        else:
-            distancekm = int(distancekm)
-
-        distancemt = request.form.get('distance (mt)', None)
-        if distancemt == '':
-            distancemt = None
-        # else:
-        #     distancemt = int(distancemt)
-
-        timesec = request.form.get('time (sec)', None)
-        if timesec == '':
-            timesec = None
-        else:
-            timesec = int(timesec)
-
-        velms = request.form.get('vel. m/s', None)
-        if velms == '':
-            velms = None
-        else:
-            velms = int(velms)
-
-        velkm = request.form.get('vel. km/h', None)
-        if velkm == '':
-            velkm = None
-        else:
-            velkm = int(velkm)
-
-        mode = request.form.get('mode', None)
-        if mode == '':
-            mode = None
-        # else:
-        #     mode = int(mode)
-
         IMPORT_FILE_HEADER_MAP.update({"index": start_index, "Latitude": latitude, "Longitude": longitude,
                                        "Nr": nr, "Altitude": altitude, "DateFrom": datefrom, "Date": date,
-                                       "Time": time, "Distance (Km)": distancekm, "Distance (Mt)": distancemt,
-                                       "Time (Sec)": timesec, "Vel. m/s": velms, "Vel. km/h": velkm,
-                                       "Mode": mode})
+                                       "Time": time, "Distance (Km)": None, "Distance (Mt)": None,
+                                       "Time (Sec)": None, "Vel. m/s": None, "Vel. km/h": None,
+                                       "Mode": None})
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(DOWNLOAD_PATH, filename))
+            file.save(os.path.join(downloadPath, filename))
 
     except HTTPException as e:
         print(e)
 
-    # importa dados
-    # serializedData = importData(IMPORT_FILE)
-    serializedData = importData(file.filename)
-
-    # processa informação
-    serializedData, total_distance, total_time = processData(serializedData)
-
-    # exporta dados para excel
-    exportXLS(serializedData, total_distance, total_time)
-
-    if len(serializedData) > 0:
-        return jsonify(
-            {'ok': True, 'data': serializedData, "count": len(serializedData), "total distance": total_distance,
-             "total time": total_time}), 200
-    else:
-        return jsonify({'ok': False, 'message': 'No points found'}), 400
+    return downloadPath, file
 
 
 # process all data
@@ -232,10 +203,9 @@ def processData(dataGroup):
 
 
 # import data from csv file
-def importData(fileToImport):
+def importData(downloadPath, fileToImport):
     processedData = []
-    # path = Path(__file__).parent.parent.joinpath(fileToImport)
-    path = os.path.join(DOWNLOAD_PATH, fileToImport)
+    path = os.path.join(downloadPath, fileToImport)
 
     with open(path, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file, fieldnames=("Latitude", "Longitude", "Nr", "Altitude", "DateFrom",
@@ -245,8 +215,8 @@ def importData(fileToImport):
         start_line = 0
 
         # retorna indice de linha de ficheiro
-        index = IMPORT_FILE_INDEX.get(fileToImport, "Invalid index")
-        if not index == 'Invalid index':
+        index = IMPORT_FILE_HEADER_MAP.get('index')
+        if index is not None:
             start_line = index
 
         for row in csv_reader:
