@@ -29,24 +29,89 @@ def get_points():
             # FILEPATH = Path(__file__).parent.parent.joinpath(file)
             DOWNLOAD_PATH = Path(__file__).parent.parent.joinpath(UPLOAD_FOLDER)
 
-        start_index = request.form['index']
-        latitude = request.form['latitude']
-        longitude = request.form['longitude']
-        datefrom = request.form['datefrom']
-        date = request.form['date']
-        time = request.form['time']
+        start_index = request.form.get('index', None)
+        if start_index == '':
+            start_index = None
+        else:
+            start_index = int(start_index)
 
-        nr = request.form['nr']
-        if not nr.isdigit():
+        latitude = request.form.get('latitude', None)
+        if latitude == '':
+            latitude = None
+        else:
+            latitude = int(latitude)
+
+        longitude = request.form.get('longitude', None)
+        if longitude == '':
+            longitude = None
+        else:
+            longitude = int(longitude)
+
+        datefrom = request.form.get('datefrom', None)
+        if datefrom == '':
+            datefrom = None
+        else:
+            datefrom = int(datefrom)
+
+        date = request.form.get('date', None)
+        if date == '':
+            date = None
+        else:
+            date = int(date)
+
+        time = request.form.get('time', None)
+        if time == '':
+            time = None
+        else:
+            time = int(time)
+
+        nr = request.form.get('nr', None)
+        if nr == '':
             nr = None
+        else:
+            nr = int(nr)
 
-        altitude = request.form['altitude']
-        distancekm = request.form['distance (km)']
-        distancemt = request.form['distance (mt)']
-        timesec = request.form['time (sec)']
-        velms = request.form['vel. m/s']
-        velkm = request.form['vel. km/h']
-        mode = request.form['mode']
+        altitude = request.form.get('altitude', None)
+        if altitude == '':
+            altitude = None
+        else:
+            altitude = int(altitude)
+
+        distancekm = request.form.get('distance (km)', None)
+        if distancekm == '':
+            distancekm = None
+        else:
+            distancekm = int(distancekm)
+
+        distancemt = request.form.get('distance (mt)', None)
+        if distancemt == '':
+            distancemt = None
+        # else:
+        #     distancemt = int(distancemt)
+
+        timesec = request.form.get('time (sec)', None)
+        if timesec == '':
+            timesec = None
+        else:
+            timesec = int(timesec)
+
+        velms = request.form.get('vel. m/s', None)
+        if velms == '':
+            velms = None
+        else:
+            velms = int(velms)
+
+        velkm = request.form.get('vel. km/h', None)
+        if velkm == '':
+            velkm = None
+        else:
+            velkm = int(velkm)
+
+        mode = request.form.get('mode', None)
+        if mode == '':
+            mode = None
+        # else:
+        #     mode = int(mode)
 
         IMPORT_FILE_HEADER_MAP.update({"index": start_index, "Latitude": latitude, "Longitude": longitude,
                                        "Nr": nr, "Altitude": altitude, "DateFrom": datefrom, "Date": date,
@@ -179,6 +244,7 @@ def importData(fileToImport):
         line_count = 0
         start_line = 0
 
+        # retorna indice de linha de ficheiro
         index = IMPORT_FILE_INDEX.get(fileToImport, "Invalid index")
         if not index == 'Invalid index':
             start_line = index
@@ -188,39 +254,31 @@ def importData(fileToImport):
 
                 itemsGroup = list(row.items())
 
-                row['Latitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Latitude')][1] if IMPORT_FILE_HEADER_MAP.get(
-                    'Latitude', None) is not None else None
+                row['Latitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Latitude')][1] if IMPORT_FILE_HEADER_MAP.get('Latitude', None) is not None else None
                 if row['Latitude'] is not None:
                     # ^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$ com indicador de polaridade inicial (latitude)
-                    match = re.search(r'(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$',
-                                      row['Latitude'])
+                    match = re.search(r'(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$', row['Latitude'])
                     if match is None:
                         row['Latitude'] = None
 
-                row['Longitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Longitude')][1] if IMPORT_FILE_HEADER_MAP.get(
-                    'Longitude', None) is not None else None
+                row['Longitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Longitude')][1] if IMPORT_FILE_HEADER_MAP.get('Longitude', None) is not None else None
                 if row['Longitude'] is not None:
                     # ^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$ com indicador de polaridade inicial (longitude)
                     match = re.search(
-                        r'(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$',
-                        row['Longitude'])
+                        r'(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$', row['Longitude'])
                     if match is None:
                         row['Longitude'] = None
 
-                row['Nr'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Nr')][1] if IMPORT_FILE_HEADER_MAP.get('Nr',
-                                                                                                          None) is not None else None
+                row['Nr'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Nr')][1] if IMPORT_FILE_HEADER_MAP.get('Nr', None) is not None else None
 
-                row['Altitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Altitude')][1] if IMPORT_FILE_HEADER_MAP.get(
-                    'Altitude', None) is not None else None
+                row['Altitude'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Altitude')][1] if IMPORT_FILE_HEADER_MAP.get('Altitude', None) is not None else None
                 if row['Altitude'] is not None:
                     if float(row["Altitude"]) <= 0:
                         row['Altitude'] = -777
 
-                row['DateFrom'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('DateFrom')][1] if IMPORT_FILE_HEADER_MAP.get(
-                    'DateFrom', None) is not None else None
+                row['DateFrom'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('DateFrom')][1] if IMPORT_FILE_HEADER_MAP.get('DateFrom', None) is not None else None
 
-                row['Date'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Date')][1] if IMPORT_FILE_HEADER_MAP.get('Date',
-                                                                                                              None) is not None else None
+                row['Date'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Date')][1] if IMPORT_FILE_HEADER_MAP.get('Date', None) is not None else None
                 if row['Date'] is not None:
                     match = re.search(r'\d{2}-\d{2}-\d{4}', row['Date'])
                     dateFilter = '%d-%m-%Y'
@@ -233,8 +291,7 @@ def importData(fileToImport):
                     else:
                         row['Date'] = None
 
-                row['Time'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Time')][1] if IMPORT_FILE_HEADER_MAP.get('Time',
-                                                                                                              None) is not None else None
+                row['Time'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Time')][1] if IMPORT_FILE_HEADER_MAP.get('Time', None) is not None else None
                 if row['Time'] is not None:
                     match = re.search(r'\d{2}:\d{2}:\d{2}', row['Time'])
                     if match is not None:
@@ -243,21 +300,14 @@ def importData(fileToImport):
                     else:
                         row['Time'] = None
 
-                row['Distance (Km)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Distance (Km)')][
-                    1] if IMPORT_FILE_HEADER_MAP.get('Distance (Km)', None) is not None else None
-                row['Distance (Mt)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Distance (Mt)')][
-                    1] if IMPORT_FILE_HEADER_MAP.get('Distance (Mt)', None) is not None else None
-                row['Time (Sec)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Time (Sec)')][
-                    1] if IMPORT_FILE_HEADER_MAP.get('Time (Sec)', None) is not None else None
-                row['Vel. m/s'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Vel. m/s')][1] if IMPORT_FILE_HEADER_MAP.get(
-                    'Vel. m/s', None) is not None else None
-                row['Vel. km/h'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Vel. km/h')][1] if IMPORT_FILE_HEADER_MAP.get(
-                    'Vel. km/h', None) is not None else None
-                row['Mode'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Mode')][1] if IMPORT_FILE_HEADER_MAP.get('Mode',
-                                                                                                              None) is not None else None
+                row['Distance (Km)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Distance (Km)')][1] if IMPORT_FILE_HEADER_MAP.get('Distance (Km)', None) is not None else None
+                row['Distance (Mt)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Distance (Mt)')][1] if IMPORT_FILE_HEADER_MAP.get('Distance (Mt)', None) is not None else None
+                row['Time (Sec)'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Time (Sec)')][1] if IMPORT_FILE_HEADER_MAP.get('Time (Sec)', None) is not None else None
+                row['Vel. m/s'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Vel. m/s')][1] if IMPORT_FILE_HEADER_MAP.get('Vel. m/s', None) is not None else None
+                row['Vel. km/h'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Vel. km/h')][1] if IMPORT_FILE_HEADER_MAP.get('Vel. km/h', None) is not None else None
+                row['Mode'] = itemsGroup[IMPORT_FILE_HEADER_MAP.get('Mode')][1] if IMPORT_FILE_HEADER_MAP.get('Mode', None) is not None else None
 
-                if row['Latitude'] is not None and row['Longitude'] is not None and row['Date'] is not None and row[
-                    'Time'] is not None:
+                if row['Latitude'] is not None and row['Longitude'] is not None and row['Date'] is not None and row['Time'] is not None:
                     processedData.append(row)
 
             line_count += 1
