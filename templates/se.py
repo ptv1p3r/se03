@@ -93,19 +93,19 @@ def validateApiData():
         datefrom = request.form.get('datefrom', None)
         if datefrom == '':
             datefrom = None
-        else:
+        elif datefrom is not None:
             datefrom = int(datefrom)
 
         nr = request.form.get('nr', None)
         if nr == '':
             nr = None
-        else:
+        elif nr is not None:
             nr = int(nr)
 
         altitude = request.form.get('altitude', None)
         if altitude == '':
             altitude = None
-        else:
+        elif altitude is not None:
             altitude = int(altitude)
 
         IMPORT_FILE_HEADER_MAP.update({"index": start_index, "Latitude": latitude, "Longitude": longitude,
