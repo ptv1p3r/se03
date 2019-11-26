@@ -21,7 +21,7 @@ def get_points():
     total_distance = 0
     total_time = 0
 
-    # valida dados pre-importacao
+    # valida dados pre-importação
     isValid, downloadPath, file = validateApiData()
 
     if isValid:
@@ -145,8 +145,7 @@ def processData(dataGroup):
 
             # calcula dados da linha seguinte
             if next_row is not None:
-                p2_timestamp = datetime.datetime.strptime(next_row["Date"] + ' ' + next_row["Time"],
-                                                          '%Y-%m-%d %H:%M:%S')
+                p2_timestamp = datetime.datetime.strptime(next_row["Date"] + ' ' + next_row["Time"], '%Y-%m-%d %H:%M:%S')
                 if p2_timestamp > p1_timestamp:
                     row["Time (Sec)"] = (p2_timestamp - p1_timestamp).total_seconds()
                 else:
