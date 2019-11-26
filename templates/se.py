@@ -110,7 +110,9 @@ def validateApiData():
             file.save(os.path.join(downloadPath, filename))
 
     except HTTPException as e:
-        print(e)
+        # print(e)
+        file = None
+        downloadPath = None
 
     return downloadPath, file
 
