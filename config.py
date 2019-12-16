@@ -37,6 +37,6 @@ IMPORT_FILE_HEADER_MAP = {}
 #         "Vel. km/h": None,
 #         "Mode": None
 #     }
-UPLOAD_ALLOWED_EXTENSIONS = set(['txt', 'csv'])
+UPLOAD_ALLOWED_EXTENSIONS = set(['txt', 'csv', 'csd'])
 UPLOAD_FOLDER = 'downloads'
 FILEPATH = ''
